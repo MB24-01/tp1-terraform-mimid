@@ -35,24 +35,22 @@ resource "docker_container" "my_container" {
   }
 }
 
-# --- CONTENEURS CLIENTS (Multi-déploiement avec count) ---
-# Image pour le client curl
+# --- CONTENEURS CLIENTS (Boucle for_each) ---
+# Exercice 6 : Utilisation de for_each pour des noms personnalisés
 resource "docker_image" "curl_image" {
   name = "appropriate/curl"
 }
 
-# Exercice 5 : Création de plusieurs clients
 resource "docker_container" "client" {
-  # On utilise la variable définie dans variables.tf
-  count = var.client_count
+  # On boucle sur la liste transformée en 'set'
+  for_each = toset(var.client_names)
 
   image = docker_image.curl_image.image_id
   
-  # Nom unique pour chaque client (client-0, client-1, client-2)
-  name  = "client-${count.index}"
+  # Le nom utilisera chaque valeur de la liste (ex: client-alpha)
+  name  = "client-${each.key}"
   
-  # Commande pour appeler nginx et dormir 30s
-  command = ["sh", "-c", "curl -s http://nginx:80 && echo 'Client ${count.index} connecte avec succes' && sleep 30"]
+  command = ["sh", "-c", "curl -s http://nginx:80 && echo 'Client ${each.key} connecte avec succes' && sleep 30"]
 
   networks_advanced {
     name = docker_network.private_network.name
@@ -62,7 +60,7 @@ resource "docker_container" "client" {
   depends_on = [docker_container.my_container]
 }
 
-# --- TEST DE VÉRIFICATION (Local-exec) ---
+# --- TEST DE VÉRIFICATION (Local) ---
 resource "null_resource" "check_nginx" {
   depends_on = [docker_container.my_container]
 

@@ -25,8 +25,8 @@ variable "internal_port" {
   type        = number
   default     = 80
 }
-variable "client_count" {
-  description = "Nombre de conteneurs clients à déployer"
-  type        = number
-  default     = 3
+variable "client_names" {
+  description = "Liste des noms pour les conteneurs clients"
+  type        = list(string)
+  default     = ["alpha", "beta", "gamma"]
 }
